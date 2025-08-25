@@ -4,6 +4,7 @@ from app.api.auth import router as auth_router
 from app.api.health import router as health_router
 from app.api.users import router as users_router
 from app.api.products import router as products_router
+from app.api.categories import router as categories_router
 from app.core.security import hash_password
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -30,3 +31,4 @@ app.include_router(auth_router)
 app.include_router(health_router)
 app.include_router(users_router)
 app.include_router(products_router)
+app.include_router(categories_router)
