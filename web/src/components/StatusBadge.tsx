@@ -1,15 +1,20 @@
 import React from 'react'
-import { Quote } from '../types/quote'
 
-const colors: Record<Quote['status'], string> = {
+const colors: Record<string, string> = {
+  // quote statuses
   DRAFT: '#999',
   SENT: '#0af',
   APPROVED: 'green',
   REJECTED: 'red',
   EXPIRED: 'orange',
+  // order statuses
+  NEW: '#999',
+  CONFIRMED: '#0af',
+  FULFILLED: 'green',
+  CANCELLED: 'red',
 }
 
-const StatusBadge: React.FC<{ status: Quote['status'] }> = ({ status }) => (
+const StatusBadge: React.FC<{ status: string }> = ({ status }) => (
   <span
     style={{
       padding: '0.2rem 0.5rem',
