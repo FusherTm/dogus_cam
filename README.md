@@ -24,3 +24,10 @@
 
 - `docker compose -f ops/docker-compose.yml exec backend alembic upgrade head`
 - `docker compose -f ops/docker-compose.yml exec backend alembic history`
+
+## Test Çalıştırma
+
+```
+docker compose -f ops/docker-compose.yml up -d --build
+docker compose -f ops/docker-compose.yml exec backend pytest -q
+```
