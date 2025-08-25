@@ -17,4 +17,6 @@ from app.models import (
     employee,
     leave_type,
     leave_request,
+    organization,
+    user_org,
 )  # noqa: E402,F401

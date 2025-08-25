@@ -1,5 +1,5 @@
 from typing import Sequence
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
@@ -9,8 +9,8 @@ from app.models.product import Product
 from app.schemas.product import ProductCreate, ProductUpdate
 
 
-def create_product(db: Session, data: ProductCreate) -> Product:
-    product = Product(**data.model_dump())
+def create_product(db: Session, org_id: UUID, data: ProductCreate) -> Product:
+    product = Product(id=uuid4(), org_id=org_id, **data.model_dump())
     db.add(product)
     try:
         db.commit()
@@ -21,14 +21,22 @@ def create_product(db: Session, data: ProductCreate) -> Product:
     return product
 
 
-def get_product(db: Session, id: UUID) -> Product | None:
-    return db.get(Product, id)
+def get_product(db: Session, org_id: UUID, id: UUID) -> Product | None:
+    return (
+        db.query(Product)
+        .filter(Product.id == id, Product.org_id == org_id)
+        .first()
+    )
 
 
 def list_products(
-    db: Session, page: int, page_size: int, search: str | None = None
+    db: Session,
+    org_id: UUID,
+    page: int,
+    page_size: int,
+    search: str | None = None,
 ) -> tuple[Sequence[Product], int]:
-    query = db.query(Product)
+    query = db.query(Product).filter(Product.org_id == org_id)
     if search:
         like = f"%{search}%"
         query = query.filter(
@@ -44,8 +52,14 @@ def list_products(
     return items, total
 
 
-def update_product(db: Session, id: UUID, data: ProductUpdate) -> Product | None:
-    product = db.get(Product, id)
+def update_product(
+    db: Session, org_id: UUID, id: UUID, data: ProductUpdate
+) -> Product | None:
+    product = (
+        db.query(Product)
+        .filter(Product.id == id, Product.org_id == org_id)
+        .first()
+    )
     if not product:
         return None
     for field, value in data.model_dump(exclude_unset=True).items():
@@ -59,8 +73,12 @@ def update_product(db: Session, id: UUID, data: ProductUpdate) -> Product | None
     return product
 
 
-def delete_product(db: Session, id: UUID) -> bool:
-    product = db.get(Product, id)
+def delete_product(db: Session, org_id: UUID, id: UUID) -> bool:
+    product = (
+        db.query(Product)
+        .filter(Product.id == id, Product.org_id == org_id)
+        .first()
+    )
     if not product:
         return False
     db.delete(product)

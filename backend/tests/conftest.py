@@ -30,6 +30,8 @@ import uuid
 
 from app.core.security import create_access_token, hash_password
 from app.models.user import User
+from app.models.organization import Organization
+from app.models.user_org import UserOrganization
 
 
 @compiles(CITEXT, "sqlite")
@@ -52,7 +54,9 @@ engine = create_engine(
 @event.listens_for(engine, "connect")
 def connect(dbapi_connection, connection_record):
     dbapi_connection.create_function("gen_random_uuid", 0, lambda: str(uuid.uuid4()))
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(
+    autocommit=False, autoflush=False, expire_on_commit=False, bind=engine
+)
 
 db_session.engine = engine
 db_session.SessionLocal = TestingSessionLocal
@@ -143,6 +147,17 @@ def seed_users(client):
     db.refresh(admin)
     db.refresh(alice)
     db.refresh(bob)
+    org = Organization(id=uuid4(), name="Default Org", slug="default")
+    db.add(org)
+    db.commit()
+    db.refresh(org)
+    db.add_all(
+        [
+            UserOrganization(user_id=admin.id, org_id=org.id, role="owner"),
+            UserOrganization(user_id=alice.id, org_id=org.id, role="member"),
+        ]
+    )
+    db.commit()
     db.close()
     return {"admin": admin, "alice": alice, "bob": bob}
 
