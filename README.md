@@ -40,6 +40,24 @@
      -d '{"name":"NewName"}'`
    `curl -s -X DELETE http://localhost:8000/categories/$CAT_ID -H "Authorization: Bearer $TOKEN"`
 
+10. Depo ve stok hareketi örnekleri:
+   `curl -s -X POST http://localhost:8000/warehouses \\
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
+     -d '{"name":"Main","code":"MAIN"}'`
+   `curl -s http://localhost:8000/warehouses -H "Authorization: Bearer $TOKEN"`
+   `WH_ID=<dönen_id>`
+   `PROD_ID=<önceden_oluşturulan_urun_id>`
+   `curl -s -X POST http://localhost:8000/stock-movements \\
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
+     -d '{"product_id":"'$PROD_ID'","warehouse_id":"'$WH_ID'","direction":"IN","quantity":5}'`
+   `curl -s -X POST http://localhost:8000/stock-movements \\
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
+     -d '{"product_id":"'$PROD_ID'","warehouse_id":"'$WH_ID'","direction":"OUT","quantity":2}'`
+   `curl -i -X POST http://localhost:8000/stock-movements \\
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
+     -d '{"product_id":"'$PROD_ID'","warehouse_id":"'$WH_ID'","direction":"OUT","quantity":99}'`
+   `curl -s http://localhost:8000/stock/product/$PROD_ID -H "Authorization: Bearer $TOKEN"`
+
 > Port çakışması notu: Lokal Postgres 5432 kullanıyorsa compose dosyasında `5432:5432` yerine `5433:5432` map et.
 
 > **Not:** Uygulama Postgres gerektirir. `DATABASE_URL` "postgresql" ile başlamıyorsa `RuntimeError("PostgreSQL required; run inside docker-compose")` fırlatır.
