@@ -70,6 +70,18 @@
      -d '{"phone":"555-0000"}'`
    `curl -s -X DELETE http://localhost:8000/partners/$PART_ID -H "Authorization: Bearer $TOKEN"`
 
+12. Satış Teklifleri örnekleri:
+   `QUOTE_PARTNER_ID=<önceden_oluşturulmuş_partner_id>`
+   `QUOTE_PROD_ID=<önceden_oluşturulmuş_urun_id>`
+   `curl -s -X POST http://localhost:8000/sales/quotes \\`
+   `  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\`
+   `  -d '{"partner_id":"'$QUOTE_PARTNER_ID'","items":[{"product_id":"'$QUOTE_PROD_ID'","quantity":1,"unit_price":100}]}'`
+   `curl -s http://localhost:8000/sales/quotes -H "Authorization: Bearer $TOKEN"`
+   `QUOTE_ID=<dönen_id>`
+   `curl -s -X POST http://localhost:8000/sales/quotes/$QUOTE_ID/status \\`
+   `  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\`
+   `  -d '{"status":"SENT"}'`
+
 > Port çakışması notu: Lokal Postgres 5432 kullanıyorsa compose dosyasında `5432:5432` yerine `5433:5432` map et.
 
 > **Not:** Uygulama Postgres gerektirir. `DATABASE_URL` "postgresql" ile başlamıyorsa `RuntimeError("PostgreSQL required; run inside docker-compose")` fırlatır.
