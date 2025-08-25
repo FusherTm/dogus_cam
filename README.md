@@ -150,3 +150,11 @@ docker compose -f ops/docker-compose.yml exec backend pytest -q
 ```
 
 Lokal makinede `alembic upgrade head` veya `pytest` çalıştırmayın.
+
+## Web
+
+1. `cd web && cp .env.example .env`
+2. `.env` içindeki `VITE_API_BASE` değerini backend URL'ine göre düzenle
+3. `npm install`
+4. `npm run dev`
+5. Login: `admin@example.com` / `ChangeMe123!`
