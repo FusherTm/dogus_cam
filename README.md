@@ -159,3 +159,4 @@ Lokal makinede `alembic upgrade head` veya `pytest` çalıştırmayın.
 4. `npm run dev`
 5. Login: `admin@example.com` / `ChangeMe123!`
 6. Giriş yaptıktan sonra sidebar'dan **Products** veya **Partners** linklerine tıklayarak listeleri görüntüleyebilirsiniz. Partners sayfasında arama kutusu, type filtresi ve sayfalama bulunur. Admin rolünde olmayan kullanıcılar bu sayfada yalnızca listeyi görüntüler.
+7. **Sales > Quotes** ekranında teklifleri arama, durum ve partner filtresiyle listeleyebilir; admin kullanıcılar yeni teklif oluşturup yalnızca `DRAFT` durumundakileri düzenleyebilir. Durum menüsünden `SENT`, `APPROVED`, `REJECTED` veya `EXPIRED` seçenekleri uygulanabilir. `APPROVED` veya `SENT` durumundaki teklifler "Convert to Order" ile satış siparişine çevrilir.
