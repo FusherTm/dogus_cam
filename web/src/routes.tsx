@@ -3,6 +3,7 @@ import { useAuth } from './store/auth'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Layout from './components/Layout'
+import Products from './pages/Products'
 
 const PrivateRoute = ({ children }: { children: JSX.Element }) => {
   const { token } = useAuth()
@@ -23,6 +24,16 @@ export const AppRoutes = () => (
         <PrivateRoute>
           <Layout>
             <Dashboard />
+          </Layout>
+        </PrivateRoute>
+      }
+    />
+    <Route
+      path="/products"
+      element={
+        <PrivateRoute>
+          <Layout>
+            <Products />
           </Layout>
         </PrivateRoute>
       }

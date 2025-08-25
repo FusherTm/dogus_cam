@@ -158,3 +158,4 @@ Lokal makinede `alembic upgrade head` veya `pytest` çalıştırmayın.
 3. `npm install`
 4. `npm run dev`
 5. Login: `admin@example.com` / `ChangeMe123!`
+6. Giriş yaptıktan sonra sidebar'dan **Products** linkine tıklayarak ürün listesini görüntüleyebilirsiniz. Admin rolünde olmayan kullanıcılar sadece listeyi görüntüler.
