@@ -14,4 +14,7 @@ from app.models import (
     sales_order,
     sales_invoice,
     ar,
+    employee,
+    leave_type,
+    leave_request,
 )  # noqa: E402,F401
