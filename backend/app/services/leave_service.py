@@ -9,6 +9,9 @@ from sqlalchemy.orm import Session
 
 from app.models.leave_type import LeaveType
 from app.models.leave_request import LeaveRequest
+from app.models.user import User
+from app.models.organization import Organization
+from uuid import uuid4
 from app.schemas.leave import (
     LeaveTypeCreate,
     LeaveTypeUpdate,
@@ -95,6 +98,7 @@ def create_leave_request(db: Session, data: LeaveRequestCreate) -> LeaveRequest:
     if overlap:
         raise ValueError("overlap")
     req = LeaveRequest(
+        id=uuid4(),
         employee_id=data.employee_id,
         type_id=data.type_id,
         start_date=data.start_date,
@@ -108,8 +112,16 @@ def create_leave_request(db: Session, data: LeaveRequestCreate) -> LeaveRequest:
     return req
 
 
-def get_leave_request(db: Session, id: UUID) -> LeaveRequest | None:
-    return db.get(LeaveRequest, id)
+def get_leave_request(
+    db: Session, current_user: User, current_org: Organization, id: UUID
+) -> LeaveRequest | None:
+    query = db.query(LeaveRequest).filter(LeaveRequest.id == id)
+    if hasattr(LeaveRequest, "org_id"):
+        query = query.filter(LeaveRequest.org_id == current_org.id)
+    if getattr(current_user, "role", None) != "admin":
+        emp_id = getattr(current_user, "employee_id", None)
+        query = query.filter(LeaveRequest.employee_id == emp_id)
+    return query.first()
 
 
 def update_leave_request(
@@ -206,6 +218,8 @@ def set_leave_status(db: Session, id: UUID, new_status: str) -> LeaveRequest | N
 
 def list_leave_requests(
     db: Session,
+    current_user: User,
+    current_org: Organization,
     page: int,
     page_size: int,
     employee_id: UUID | None = None,
@@ -215,7 +229,12 @@ def list_leave_requests(
     date_to: date | None = None,
 ) -> tuple[Sequence[LeaveRequest], int]:
     query = db.query(LeaveRequest)
-    if employee_id:
+    if hasattr(LeaveRequest, "org_id"):
+        query = query.filter(LeaveRequest.org_id == current_org.id)
+    if getattr(current_user, "role", None) != "admin":
+        emp_id = getattr(current_user, "employee_id", None)
+        query = query.filter(LeaveRequest.employee_id == emp_id)
+    elif employee_id:
         query = query.filter(LeaveRequest.employee_id == employee_id)
     if status:
         query = query.filter(LeaveRequest.status == status)

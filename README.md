@@ -144,6 +144,10 @@
      -d '{"status":"APPROVED"}'`
    `curl -s http://localhost:8000/hr/leaves/balance/$EMP_ID?year=2024 -H "Authorization: Bearer $TOKEN"`
 
+   **Not:** İzin taleplerinde create/update/delete ve durum değişiklikleri yalnızca
+   adminler tarafından yapılabilir. Çalışanlar kendi taleplerini
+   görüntüleyebilir ancak oluşturamaz veya düzenleyemez.
+
 ## Çoklu Firma (Tenant) – İlk Adım
 
 Tüm isteklerde firma seçimi için `X-Org-Slug` header'ı kullanılır. Varsayılan organizasyon:
