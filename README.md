@@ -81,6 +81,19 @@
    `curl -s -X POST http://localhost:8000/sales/quotes/$QUOTE_ID/status \\`
    `  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\`
    `  -d '{"status":"SENT"}'`
+13. Satış Siparişleri ve tekliften dönüşüm:
+   `curl -s -X POST http://localhost:8000/sales/quotes/$QUOTE_ID/status \`
+   `  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \`
+   `  -d '{"status":"APPROVED"}'`
+   `curl -s -X POST http://localhost:8000/sales/quotes/$QUOTE_ID/to-order \`
+   `  -H "Authorization: Bearer $TOKEN"`
+   `ORDER_ID=<dönen_id>`
+   `curl -s -X POST http://localhost:8000/sales/orders/$ORDER_ID/status \`
+   `  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \`
+   `  -d '{"status":"CONFIRMED"}'`
+   `curl -s -X POST http://localhost:8000/sales/orders/$ORDER_ID/status \`
+   `  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \`
+   `  -d '{"status":"FULFILLED"}'`
 
 > Port çakışması notu: Lokal Postgres 5432 kullanıyorsa compose dosyasında `5432:5432` yerine `5433:5432` map et.
 

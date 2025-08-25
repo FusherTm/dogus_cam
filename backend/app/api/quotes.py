@@ -13,12 +13,14 @@ from app.core.deps import (
 )
 from app.models.user import User
 from app.schemas.quote import QuoteCreate, QuoteListResponse, QuotePublic, QuoteUpdate
+from app.schemas.sales_order import SalesOrderPublic
 from app.services.quote_service import (
     create_quote,
     get_quote,
     list_quotes,
     set_status,
     update_quote,
+    convert_quote_to_order,
 )
 
 
@@ -95,3 +97,22 @@ def change_status_endpoint(
     if not quote:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quote not found")
     return quote
+
+
+@router.post(
+    "/{quote_id}/to-order",
+    response_model=SalesOrderPublic,
+    status_code=status.HTTP_201_CREATED,
+)
+def convert_to_order_endpoint(
+    quote_id: UUID,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+):
+    try:
+        order = convert_quote_to_order(db, quote_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="invalid_status")
+    if not order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quote not found")
+    return order

@@ -6,7 +6,10 @@ from uuid import UUID
 from sqlalchemy.orm import Session, selectinload
 
 from app.models.quote import Quote, QuoteItem
+from app.models.sales_order import SalesOrder
 from app.schemas.quote import QuoteCreate, QuoteUpdate, QuoteItemIn
+from app.schemas.sales_order import SalesOrderCreate, SalesOrderItemIn
+from app.services.sales_order_service import create_order
 
 
 def _generate_number(db: Session, issue_date: date) -> str:
@@ -151,3 +154,31 @@ def set_status(db: Session, id: UUID, new_status: str) -> Quote | None:
     db.commit()
     db.refresh(quote)
     return quote
+
+
+def convert_quote_to_order(db: Session, quote_id: UUID) -> SalesOrder | None:
+    quote = db.query(Quote).options(selectinload(Quote.items)).get(quote_id)
+    if not quote:
+        return None
+    if quote.status not in {"APPROVED", "SENT"}:
+        raise ValueError("invalid_status")
+    order_data = SalesOrderCreate(
+        partner_id=quote.partner_id,
+        currency=quote.currency,
+        order_date=date.today(),
+        notes=quote.notes,
+        discount_rate=quote.discount_rate,
+        items=[
+            SalesOrderItemIn(
+                product_id=item.product_id,
+                description=item.description,
+                quantity=item.quantity,
+                unit_price=item.unit_price,
+                line_discount_rate=item.line_discount_rate,
+                tax_rate=item.tax_rate,
+            )
+            for item in quote.items
+        ],
+    )
+    order = create_order(db, order_data)
+    return order
