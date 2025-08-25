@@ -13,6 +13,7 @@ from app.api.quotes import router as quotes_router
 from app.api.sales_orders import router as sales_orders_router
 from app.api.sales_invoices import router as sales_invoices_router
 from app.api.ar import router as ar_router
+from app.api.dashboard import router as dashboard_router
 from app.core.security import hash_password
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -48,3 +49,4 @@ app.include_router(quotes_router)
 app.include_router(sales_orders_router)
 app.include_router(sales_invoices_router)
 app.include_router(ar_router)
+app.include_router(dashboard_router)

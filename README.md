@@ -106,6 +106,15 @@
      -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
      -d '{"status":"ISSUED"}'`
 
+15. Ürün restock_level güncelleme:
+   `PROD_ID=<ürün_id>`
+   `curl -s -X PUT http://localhost:8000/products/$PROD_ID \\
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
+     -d '{"restock_level":10}'`
+
+16. Dashboard özeti:
+   `curl -s http://localhost:8000/dashboard/summary -H "Authorization: Bearer $TOKEN"`
+
 ## Cari Hesap Akışı
 
 1. Fatura `ISSUED` olduğunda otomatik olarak `ar_entries` tablosuna borç kaydı düşer.
