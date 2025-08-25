@@ -21,6 +21,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <NavLink to="/partners">Partners</NavLink>
           <NavLink to="/sales/orders">Sales &gt; Orders</NavLink>
           <NavLink to="/sales/quotes">Sales &gt; Quotes</NavLink>
+          <NavLink to="/sales/invoices">Sales &gt; Invoices</NavLink>
         </nav>
       </aside>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
