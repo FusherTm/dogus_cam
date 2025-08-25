@@ -12,6 +12,11 @@
 5. Token ile /auth/me:
    `TOKEN=<çıkan_access_token>`
    `curl -s http://localhost:8000/auth/me -H "Authorization: Bearer $TOKEN"`
+6. Admin ile /users listeleme:
+   `curl -s http://localhost:8000/users -H "Authorization: Bearer $TOKEN"`
+7. Normal kullanıcı ile 403 örneği:
+   `USER_TOKEN=<user_token>`
+   `curl -i http://localhost:8000/users -H "Authorization: Bearer $USER_TOKEN"`
 
 > Port çakışması notu: Lokal Postgres 5432 kullanıyorsa compose dosyasında `5432:5432` yerine `5433:5432` map et.
 

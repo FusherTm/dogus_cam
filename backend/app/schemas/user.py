@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, ConfigDict
 
+from app.schemas.common import PageMeta
+
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -19,3 +21,7 @@ class UserPublic(BaseModel):
     created_at_utc: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserListResponse(PageMeta):
+    items: list[UserPublic]
