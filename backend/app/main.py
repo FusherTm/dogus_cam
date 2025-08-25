@@ -20,6 +20,9 @@ from app.core.security import hash_password
 from app.core.config import settings
 from app.db.session import SessionLocal
 from app.models.user import User
+from app.models.organization import Organization
+from app.models.user_org import UserOrganization
+from app.models.product import Product
 
 app = FastAPI()
 
@@ -27,8 +30,8 @@ app = FastAPI()
 @app.on_event("startup")
 def startup_event():
     with SessionLocal() as db:
-        admin_exists = db.query(User).filter(User.role == "admin").first()
-        if not admin_exists:
+        admin = db.query(User).filter(User.email == settings.ADMIN_EMAIL).first()
+        if not admin:
             admin = User(
                 email=settings.ADMIN_EMAIL,
                 password_hash=hash_password(settings.ADMIN_PASSWORD),
@@ -36,6 +39,36 @@ def startup_event():
             )
             db.add(admin)
             db.commit()
+            db.refresh(admin)
+        elif admin.role != "admin":
+            admin.role = "admin"
+            db.commit()
+
+        org = db.query(Organization).filter(Organization.slug == "default").first()
+        if not org:
+            org = Organization(name="Default Org", slug="default")
+            db.add(org)
+            db.commit()
+            db.refresh(org)
+
+        membership = (
+            db.query(UserOrganization)
+            .filter(
+                UserOrganization.user_id == admin.id,
+                UserOrganization.org_id == org.id,
+            )
+            .first()
+        )
+        if not membership:
+            db.add(
+                UserOrganization(user_id=admin.id, org_id=org.id, role="owner")
+            )
+            db.commit()
+
+        db.query(Product).filter(Product.org_id.is_(None)).update(
+            {Product.org_id: org.id}, synchronize_session=False
+        )
+        db.commit()
 
 
 app.include_router(auth_router)

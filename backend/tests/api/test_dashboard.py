@@ -7,12 +7,16 @@ from app.models.warehouse import Warehouse
 from app.models.partner import Partner
 from app.models.stock_movement import StockMovement
 from app.models.sales_invoice import SalesInvoice
+from app.models.organization import Organization
 from app.services.ar_service import on_invoice_issued
 
 
 def _setup_data():
     db = SessionLocal()
-    prod = Product(id=uuid4(), name="P1", sku="SKU1", price=1, restock_level=5)
+    org = db.query(Organization).filter_by(slug="default").first()
+    prod = Product(
+        id=uuid4(), name="P1", sku="SKU1", price=1, restock_level=5, org_id=org.id
+    )
     wh = Warehouse(id=uuid4(), name="Main", code="MAIN")
     partner = Partner(id=uuid4(), name="Cust", type="customer")
     db.add_all([prod, wh, partner])

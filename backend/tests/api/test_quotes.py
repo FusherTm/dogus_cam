@@ -3,12 +3,16 @@ from uuid import uuid4
 from app.db.session import SessionLocal
 from app.models.partner import Partner
 from app.models.product import Product
+from app.models.organization import Organization
 
 
 def seed_partner_and_product():
     db = SessionLocal()
     partner = Partner(id=uuid4(), name="Cust", type="customer")
-    product = Product(id=uuid4(), name="Widget", sku=str(uuid4())[:8], price=100)
+    org = db.query(Organization).filter_by(slug="default").first()
+    product = Product(
+        id=uuid4(), name="Widget", sku=str(uuid4())[:8], price=100, org_id=org.id
+    )
     db.add_all([partner, product])
     db.commit()
     db.refresh(partner)

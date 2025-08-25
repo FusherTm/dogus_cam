@@ -1,6 +1,6 @@
 from typing import Generator
 
-from fastapi import Depends, HTTPException, Query, status
+from fastapi import Depends, HTTPException, Header, Query, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from uuid import UUID
@@ -9,6 +9,8 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.db.session import SessionLocal
 from app.models.user import User
+from app.models.organization import Organization
+from app.models.user_org import UserOrganization
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -51,6 +53,36 @@ def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions",
+        )
+    return current_user
+
+
+def get_current_org(
+    x_org_slug: str | None = Header(None), db: Session = Depends(get_db)
+) -> Organization:
+    slug = x_org_slug or "default"
+    org = db.query(Organization).filter(Organization.slug == slug).first()
+    if not org:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="org_not_found")
+    return org
+
+
+def get_current_user_in_org(
+    current_user: User = Depends(get_current_user),
+    current_org: Organization = Depends(get_current_org),
+    db: Session = Depends(get_db),
+) -> User:
+    membership = (
+        db.query(UserOrganization)
+        .filter(
+            UserOrganization.user_id == current_user.id,
+            UserOrganization.org_id == current_org.id,
+        )
+        .first()
+    )
+    if not membership:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
         )
     return current_user
 

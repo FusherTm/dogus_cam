@@ -144,6 +144,26 @@
      -d '{"status":"APPROVED"}'`
    `curl -s http://localhost:8000/hr/leaves/balance/$EMP_ID?year=2024 -H "Authorization: Bearer $TOKEN"`
 
+## Çoklu Firma (Tenant) – İlk Adım
+
+Tüm isteklerde firma seçimi için `X-Org-Slug` header'ı kullanılır. Varsayılan organizasyon:
+
+```
+X-Org-Slug: default
+```
+
+Örnek ürün akışı:
+
+```
+curl -s -X POST http://localhost:8000/products \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -H "X-Org-Slug: default" \
+  -d '{"name":"Sample","sku":"SKU123","price":9.99}'
+curl -s http://localhost:8000/products \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "X-Org-Slug: default"
+```
+
 ## Cari Hesap Akışı
 
 1. Fatura `ISSUED` olduğunda otomatik olarak `ar_entries` tablosuna borç kaydı düşer.

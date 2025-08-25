@@ -1,11 +1,14 @@
 from app.db.session import SessionLocal
 from app.models.product import Product
 from app.models.warehouse import Warehouse
+from app.models.organization import Organization
 
 
 def seed_product_and_warehouse():
     db = SessionLocal()
-    product = Product(name="Widget", sku="WIDG1", price=1)
+    org = db.query(Organization).filter_by(slug="default").first()
+    from uuid import uuid4
+    product = Product(id=uuid4(), name="Widget", sku="WIDG1", price=1, org_id=org.id)
     warehouse = Warehouse(name="Main", code="MAIN")
     db.add_all([product, warehouse])
     db.commit()

@@ -1,13 +1,16 @@
 from app.db.session import SessionLocal
 from app.models.product import Product
+from app.models.organization import Organization
 
 
 def seed_products():
     db = SessionLocal()
+    org = db.query(Organization).filter_by(slug="default").first()
+    from uuid import uuid4
     products = [
-        Product(name="Alpha", sku="ALPHA", price=1),
-        Product(name="Beta", sku="BETA", price=2),
-        Product(name="Gamma", sku="GAMMA", price=3),
+        Product(id=uuid4(), name="Alpha", sku="ALPHA", price=1, org_id=org.id),
+        Product(id=uuid4(), name="Beta", sku="BETA", price=2, org_id=org.id),
+        Product(id=uuid4(), name="Gamma", sku="GAMMA", price=3, org_id=org.id),
     ]
     db.add_all(products)
     db.commit()
