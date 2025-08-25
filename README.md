@@ -31,6 +31,8 @@
 
 > Port çakışması notu: Lokal Postgres 5432 kullanıyorsa compose dosyasında `5432:5432` yerine `5433:5432` map et.
 
+> **Not:** Uygulama Postgres gerektirir. `DATABASE_URL` "postgresql" ile başlamıyorsa `RuntimeError("PostgreSQL required; run inside docker-compose")` fırlatır.
+
 ## Alembic Komut Örnekleri
 
 - `docker compose -f ops/docker-compose.yml exec backend alembic upgrade head`
@@ -43,9 +45,15 @@ docker compose -f ops/docker-compose.yml up -d --build
 docker compose -f ops/docker-compose.yml exec backend pytest -q
 ```
 
-## Test ve migration
+## Sadece container içinde çalıştır
 
-Hızlı komutlar:
+Aşağıdaki komutları kendi makinenizde değil, mutlaka container içinde çalıştırın:
 
-- `pytest -q`  (httpx artık mevcut olmalı)
-- `alembic upgrade head`  (formatters hatası çözülmüş olacak)
+```
+cp ops/.env.example ops/.env
+docker compose -f ops/docker-compose.yml up -d --build
+docker compose -f ops/docker-compose.yml exec backend alembic upgrade head
+docker compose -f ops/docker-compose.yml exec backend pytest -q
+```
+
+Lokal makinede `alembic upgrade head` veya `pytest` çalıştırmayın.
