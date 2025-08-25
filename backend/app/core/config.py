@@ -1,5 +1,6 @@
 from pathlib import Path
 from dotenv import load_dotenv
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
 
 # Load .env files if present
@@ -16,6 +17,14 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     ADMIN_EMAIL: str
     ADMIN_PASSWORD: str
+
+    @model_validator(mode="after")
+    def _ensure_postgres(self) -> "Settings":
+        if self.APP_ENV != "test" and not self.DATABASE_URL.startswith("postgresql"):
+            raise RuntimeError(
+                "PostgreSQL required; run inside docker-compose"
+            )
+        return self
 
 
 settings = Settings()
