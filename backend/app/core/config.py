@@ -1,6 +1,6 @@
 from pathlib import Path
 from dotenv import load_dotenv
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 # Load .env from ops directory if present
 BASE_DIR = Path(__file__).resolve().parents[2]
