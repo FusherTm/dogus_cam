@@ -7,11 +7,13 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.models.sales_invoice import SalesInvoice, SalesInvoiceItem
 from app.models.sales_order import SalesOrder
+from app.models.ar import ARAllocation
 from app.schemas.sales_invoice import (
     SalesInvoiceCreate,
     SalesInvoiceItemIn,
     SalesInvoiceUpdate,
 )
+from app.services.ar_service import compute_partner_balance, on_invoice_issued
 
 
 def _generate_number(db: Session, issue_date: date) -> str:
@@ -154,6 +156,36 @@ def set_status(db: Session, id: UUID, new_status: str) -> SalesInvoice | None:
     allowed = transitions.get(invoice.status, set())
     if new_status not in allowed:
         raise ValueError("invalid_status")
+    if invoice.status == "DRAFT" and new_status == "ISSUED":
+        invoice.status = new_status
+        db.commit()
+        db.refresh(invoice)
+        on_invoice_issued(db, invoice)
+        return invoice
+    if invoice.status == "ISSUED" and new_status == "PAID":
+        balance = compute_partner_balance(db, invoice.partner_id)
+        inv_bal = next(
+            (b for b in balance["by_invoice"] if b["invoice_id"] == invoice.id),
+            None,
+        )
+        if not inv_bal or inv_bal["remaining"] != Decimal("0"):
+            raise ValueError("unsettled_balance")
+        invoice.status = new_status
+        db.commit()
+        db.refresh(invoice)
+        return invoice
+    if new_status == "CANCELLED":
+        alloc_exists = (
+            db.query(ARAllocation)
+            .filter(ARAllocation.invoice_id == invoice.id)
+            .first()
+        )
+        if alloc_exists:
+            raise ValueError("allocated_invoice")
+        invoice.status = new_status
+        db.commit()
+        db.refresh(invoice)
+        return invoice
     invoice.status = new_status
     db.commit()
     db.refresh(invoice)

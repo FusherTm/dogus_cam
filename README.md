@@ -106,6 +106,13 @@
      -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
      -d '{"status":"ISSUED"}'`
 
+## Cari Hesap Akışı
+
+1. Fatura `ISSUED` olduğunda otomatik olarak `ar_entries` tablosuna borç kaydı düşer.
+2. Tahsilatlar `POST /finance/ar/payments` ile kaydedilir ve FIFO mantığıyla açık faturalara dağıtılır.
+3. `GET /finance/ar/balances/{partner_id}` uç noktası partner bazında bakiye ve fatura kırılımını döner.
+4. Bir faturanın kalan bakiyesi sıfırlanınca `POST /sales/invoices/{id}/status` ile `PAID` yapılabilir.
+
 > Port çakışması notu: Lokal Postgres 5432 kullanıyorsa compose dosyasında `5432:5432` yerine `5433:5432` map et.
 
 > **Not:** Uygulama Postgres gerektirir. `DATABASE_URL` "postgresql" ile başlamıyorsa `RuntimeError("PostgreSQL required; run inside docker-compose")` fırlatır.
