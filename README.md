@@ -115,6 +115,19 @@
 16. Dashboard özeti:
    `curl -s http://localhost:8000/dashboard/summary -H "Authorization: Bearer $TOKEN"`
 
+17. Çalışan CRUD örnekleri:
+   `curl -s -X POST http://localhost:8000/hr/employees \
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+     -d '{"code":"P0001","first_name":"Ada","last_name":"Lovelace"}'`
+   `curl -s http://localhost:8000/hr/employees -H "Authorization: Bearer $TOKEN"`
+   `EMP_ID=<dönen_id>`
+   `curl -s http://localhost:8000/hr/employees/$EMP_ID -H "Authorization: Bearer $TOKEN"`
+   `curl -s -X PUT http://localhost:8000/hr/employees/$EMP_ID \
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+     -d '{"title":"Lead"}'`
+   `curl -s -X DELETE http://localhost:8000/hr/employees/$EMP_ID \
+     -H "Authorization: Bearer $TOKEN"`
+
 ## Cari Hesap Akışı
 
 1. Fatura `ISSUED` olduğunda otomatik olarak `ar_entries` tablosuna borç kaydı düşer.
