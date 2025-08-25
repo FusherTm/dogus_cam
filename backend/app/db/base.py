@@ -12,4 +12,6 @@ from app.models import (
     partner,
     quote,
     sales_order,
+    sales_invoice,
+    ar,
 )  # noqa: E402,F401

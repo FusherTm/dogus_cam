@@ -103,8 +103,11 @@ def change_status_endpoint(
 ):
     try:
         invoice = set_status(db, invoice_id, body.status)
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="invalid_status")
+    except ValueError as e:
+        detail = str(e)
+        if detail in {"invalid_status", "unsettled_balance", "allocated_invoice"}:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=detail)
+        raise
     if not invoice:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invoice not found")
     return invoice
