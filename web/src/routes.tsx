@@ -7,6 +7,7 @@ import Products from './pages/Products'
 import Partners from './pages/Partners'
 import SalesQuotes from './pages/SalesQuotes'
 import SalesOrders from './pages/SalesOrders'
+import SalesInvoices from './pages/SalesInvoices'
 
 const PrivateRoute = ({ children }: { children: JSX.Element }) => {
   const { token } = useAuth()
@@ -67,6 +68,16 @@ export const AppRoutes = () => (
         <PrivateRoute>
           <Layout>
             <SalesOrders />
+          </Layout>
+        </PrivateRoute>
+      }
+    />
+    <Route
+      path="/sales/invoices"
+      element={
+        <PrivateRoute>
+          <Layout>
+            <SalesInvoices />
           </Layout>
         </PrivateRoute>
       }
