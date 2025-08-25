@@ -12,6 +12,7 @@ class ProductBase(BaseModel):
     sku: str = Field(..., pattern=r"^[A-Za-z0-9_-]{3,40}$")
     price: Decimal = Field(..., ge=0)
     is_active: bool = True
+    restock_level: Decimal = Field(0, ge=0)
 
 
 class ProductCreate(ProductBase):
@@ -23,6 +24,7 @@ class ProductUpdate(BaseModel):
     sku: str | None = Field(None, pattern=r"^[A-Za-z0-9_-]{3,40}$")
     price: Decimal | None = Field(None, ge=0)
     is_active: bool | None = None
+    restock_level: Decimal | None = Field(None, ge=0)
 
 
 class ProductPublic(BaseModel):
@@ -31,6 +33,7 @@ class ProductPublic(BaseModel):
     sku: str
     price: Decimal
     is_active: bool
+    restock_level: Decimal
     created_at_utc: datetime
 
     model_config = ConfigDict(from_attributes=True)
