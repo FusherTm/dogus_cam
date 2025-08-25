@@ -14,9 +14,10 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
+from app.models._mixins import UUIDPKMixin
 
 
-class Quote(Base):
+class Quote(UUIDPKMixin, Base):
     __tablename__ = "quotes"
     __table_args__ = (
         Index("ix_quotes_partner", "partner_id"),
@@ -31,11 +32,6 @@ class Quote(Base):
         ),
     )
 
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        server_default=text("gen_random_uuid()"),
-    )
     number = Column(Text, nullable=False, unique=True)
     partner_id = Column(
         UUID(as_uuid=True), ForeignKey("partners.id", ondelete="RESTRICT"), nullable=False
@@ -61,7 +57,7 @@ class Quote(Base):
     )
 
 
-class QuoteItem(Base):
+class QuoteItem(UUIDPKMixin, Base):
     __tablename__ = "quote_items"
     __table_args__ = (
         Index("ix_quote_items_quote", "quote_id"),
@@ -77,11 +73,6 @@ class QuoteItem(Base):
         ),
     )
 
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        server_default=text("gen_random_uuid()"),
-    )
     quote_id = Column(
         UUID(as_uuid=True), ForeignKey("quotes.id", ondelete="CASCADE"), nullable=False
     )
