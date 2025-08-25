@@ -128,6 +128,22 @@
    `curl -s -X DELETE http://localhost:8000/hr/employees/$EMP_ID \
      -H "Authorization: Bearer $TOKEN"`
 
+18. İzin modülü örnekleri:
+   `curl -s -X POST http://localhost:8000/hr/leaves/types \\
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
+     -d '{"code":"YILLIK","name":"Yıllık İzin","is_annual":true}'`
+   `curl -s -X POST http://localhost:8000/hr/leaves/requests \\
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
+     -d '{"employee_id":"'$EMP_ID'","type_id":"<YILLIK_TYPE_ID>","start_date":"2024-01-10","end_date":"2024-01-12"}'`
+   `REQ_ID=<dönen_id>`
+   `curl -s -X POST http://localhost:8000/hr/leaves/requests/$REQ_ID/status \\
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
+     -d '{"status":"SUBMITTED"}'`
+   `curl -s -X POST http://localhost:8000/hr/leaves/requests/$REQ_ID/status \\
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
+     -d '{"status":"APPROVED"}'`
+   `curl -s http://localhost:8000/hr/leaves/balance/$EMP_ID?year=2024 -H "Authorization: Bearer $TOKEN"`
+
 ## Cari Hesap Akışı
 
 1. Fatura `ISSUED` olduğunda otomatik olarak `ar_entries` tablosuna borç kaydı düşer.

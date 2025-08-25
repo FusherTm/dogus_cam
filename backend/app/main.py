@@ -15,6 +15,7 @@ from app.api.sales_invoices import router as sales_invoices_router
 from app.api.ar import router as ar_router
 from app.api.dashboard import router as dashboard_router
 from app.api.employees import router as employees_router
+from app.api.leaves import router as leaves_router
 from app.core.security import hash_password
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -52,3 +53,4 @@ app.include_router(sales_invoices_router)
 app.include_router(ar_router)
 app.include_router(dashboard_router)
 app.include_router(employees_router)
+app.include_router(leaves_router)
