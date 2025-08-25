@@ -10,4 +10,5 @@ from app.models import (
     user,
     warehouse,
     partner,
+    quote,
 )  # noqa: E402,F401
