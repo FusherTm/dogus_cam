@@ -94,6 +94,17 @@
    `curl -s -X POST http://localhost:8000/sales/orders/$ORDER_ID/status \`
    `  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \`
    `  -d '{"status":"FULFILLED"}'`
+14. Satış Faturaları örnekleri:
+   `INV_PARTNER_ID=<önceden_oluşturulmuş_partner_id>`
+   `INV_PROD_ID=<önceden_oluşturulmuş_urun_id>`
+   `curl -s -X POST http://localhost:8000/sales/invoices \\
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
+     -d '{"partner_id":"'$INV_PARTNER_ID'","items":[{"product_id":"'$INV_PROD_ID'","quantity":1,"unit_price":100}]}'`
+   `curl -s http://localhost:8000/sales/invoices -H "Authorization: Bearer $TOKEN"`
+   `INV_ID=<dönen_id>`
+   `curl -s -X POST http://localhost:8000/sales/invoices/$INV_ID/status \\
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
+     -d '{"status":"ISSUED"}'`
 
 > Port çakışması notu: Lokal Postgres 5432 kullanıyorsa compose dosyasında `5432:5432` yerine `5433:5432` map et.
 
