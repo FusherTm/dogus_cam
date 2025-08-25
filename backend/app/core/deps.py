@@ -1,8 +1,9 @@
 from typing import Generator
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Query, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
+from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -34,9 +35,12 @@ def get_current_user(
         user_id: str | None = payload.get("sub")
         if user_id is None:
             raise credentials_exception
+        user_uuid = UUID(user_id)
     except JWTError:
         raise credentials_exception
-    user = db.get(User, user_id)
+    except ValueError:
+        raise credentials_exception
+    user = db.get(User, user_uuid)
     if not user or not user.is_active:
         raise credentials_exception
     return user
@@ -49,3 +53,10 @@ def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
             detail="Not enough permissions",
         )
     return current_user
+
+
+def get_pagination(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=10, le=100),
+) -> tuple[int, int]:
+    return page, page_size
