@@ -28,6 +28,17 @@
      -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
      -d '{"price":19.99}'`
    `curl -s -X DELETE http://localhost:8000/products/$PROD_ID -H "Authorization: Bearer $TOKEN"`
+9. Kategori CRUD örnekleri:
+   `curl -s -X POST http://localhost:8000/categories \\
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
+     -d '{"name":"Electronics","code":"ELEC"}'`
+   `curl -s http://localhost:8000/categories -H "Authorization: Bearer $TOKEN"`
+   `CAT_ID=<dönen_id>`
+   `curl -s http://localhost:8000/categories/$CAT_ID -H "Authorization: Bearer $TOKEN"`
+   `curl -s -X PUT http://localhost:8000/categories/$CAT_ID \\
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
+     -d '{"name":"NewName"}'`
+   `curl -s -X DELETE http://localhost:8000/categories/$CAT_ID -H "Authorization: Bearer $TOKEN"`
 
 > Port çakışması notu: Lokal Postgres 5432 kullanıyorsa compose dosyasında `5432:5432` yerine `5433:5432` map et.
 
