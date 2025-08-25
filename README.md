@@ -42,3 +42,10 @@
 docker compose -f ops/docker-compose.yml up -d --build
 docker compose -f ops/docker-compose.yml exec backend pytest -q
 ```
+
+## Test ve migration
+
+Hızlı komutlar:
+
+- `pytest -q`  (httpx artık mevcut olmalı)
+- `alembic upgrade head`  (formatters hatası çözülmüş olacak)
