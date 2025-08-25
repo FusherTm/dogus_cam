@@ -11,4 +11,5 @@ from app.models import (
     warehouse,
     partner,
     quote,
+    sales_order,
 )  # noqa: E402,F401
