@@ -58,6 +58,18 @@
      -d '{"product_id":"'$PROD_ID'","warehouse_id":"'$WH_ID'","direction":"OUT","quantity":99}'`
    `curl -s http://localhost:8000/stock/product/$PROD_ID -H "Authorization: Bearer $TOKEN"`
 
+11. Partner CRUD örnekleri:
+   `curl -s -X POST http://localhost:8000/partners \\
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
+     -d '{"name":"Acme","type":"customer","tax_number":"TN123"}'`
+   `curl -s http://localhost:8000/partners -H "Authorization: Bearer $TOKEN"`
+   `PART_ID=<dönen_id>`
+   `curl -s http://localhost:8000/partners/$PART_ID -H "Authorization: Bearer $TOKEN"`
+   `curl -s -X PUT http://localhost:8000/partners/$PART_ID \\
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
+     -d '{"phone":"555-0000"}'`
+   `curl -s -X DELETE http://localhost:8000/partners/$PART_ID -H "Authorization: Bearer $TOKEN"`
+
 > Port çakışması notu: Lokal Postgres 5432 kullanıyorsa compose dosyasında `5432:5432` yerine `5433:5432` map et.
 
 > **Not:** Uygulama Postgres gerektirir. `DATABASE_URL` "postgresql" ile başlamıyorsa `RuntimeError("PostgreSQL required; run inside docker-compose")` fırlatır.

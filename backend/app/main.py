@@ -8,6 +8,7 @@ from app.api.categories import router as categories_router
 from app.api.warehouses import router as warehouses_router
 from app.api.stock_movements import router as stock_movements_router
 from app.api.stock import router as stock_router
+from app.api.partners import router as partners_router
 from app.core.security import hash_password
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -38,3 +39,4 @@ app.include_router(categories_router)
 app.include_router(warehouses_router)
 app.include_router(stock_movements_router)
 app.include_router(stock_router)
+app.include_router(partners_router)

@@ -9,4 +9,5 @@ from app.models import (
     stock_movement,
     user,
     warehouse,
+    partner,
 )  # noqa: E402,F401
