@@ -1,16 +1,17 @@
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, Response, status
-
-
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.deps import (
     get_current_admin,
-    get_current_user,
+    get_current_org,
+    get_current_user_in_org,
     get_db,
     get_pagination,
 )
+from app.models.organization import Organization
 from app.models.user import User
 from app.schemas.partner import (
     PartnerCreate,
@@ -35,10 +36,11 @@ def list_partners_endpoint(
     search: str | None = None,
     type: str | None = None,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    org: Organization = Depends(get_current_org),
+    user: User = Depends(get_current_user_in_org),
 ):
     page, page_size = pagination
-    items, total = list_partners(db, page, page_size, search, type)
+    items, total = list_partners(db, org.id, page, page_size, search, type)
     return {"items": items, "total": total, "page": page, "page_size": page_size}
 
 
@@ -46,9 +48,10 @@ def list_partners_endpoint(
 def get_partner_endpoint(
     partner_id: UUID,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    org: Organization = Depends(get_current_org),
+    user: User = Depends(get_current_user_in_org),
 ):
-    partner = get_partner(db, partner_id)
+    partner = get_partner(db, org.id, partner_id)
     if not partner:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Partner not found")
     return partner
@@ -59,9 +62,11 @@ def create_partner_endpoint(
     data: PartnerCreate,
     db: Session = Depends(get_db),
     admin: User = Depends(get_current_admin),
+    org: Organization = Depends(get_current_org),
+    _: User = Depends(get_current_user_in_org),
 ):
     try:
-        partner = create_partner(db, data)
+        partner = create_partner(db, org.id, data)
     except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -76,9 +81,11 @@ def update_partner_endpoint(
     data: PartnerUpdate,
     db: Session = Depends(get_db),
     admin: User = Depends(get_current_admin),
+    org: Organization = Depends(get_current_org),
+    _: User = Depends(get_current_user_in_org),
 ):
     try:
-        partner = update_partner(db, partner_id, data)
+        partner = update_partner(db, org.id, partner_id, data)
     except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -94,8 +101,10 @@ def delete_partner_endpoint(
     partner_id: UUID,
     db: Session = Depends(get_db),
     admin: User = Depends(get_current_admin),
+    org: Organization = Depends(get_current_org),
+    _: User = Depends(get_current_user_in_org),
 ):
-    deleted = delete_partner(db, partner_id)
+    deleted = delete_partner(db, org.id, partner_id)
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Partner not found")
     return Response(status_code=status.HTTP_204_NO_CONTENT)

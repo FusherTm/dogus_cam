@@ -6,10 +6,12 @@ from sqlalchemy.orm import Session
 
 from app.core.deps import (
     get_current_admin,
-    get_current_user,
+    get_current_org,
+    get_current_user_in_org,
     get_db,
     get_pagination,
 )
+from app.models.organization import Organization
 from app.models.user import User
 from app.schemas.category import (
     CategoryCreate,
@@ -33,10 +35,11 @@ def list_categories_endpoint(
     pagination: tuple[int, int] = Depends(get_pagination),
     search: str | None = None,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    org: Organization = Depends(get_current_org),
+    user: User = Depends(get_current_user_in_org),
 ):
     page, page_size = pagination
-    items, total = list_categories(db, page, page_size, search)
+    items, total = list_categories(db, org.id, page, page_size, search)
     return {"items": items, "total": total, "page": page, "page_size": page_size}
 
 
@@ -44,9 +47,10 @@ def list_categories_endpoint(
 def get_category_endpoint(
     category_id: UUID,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    org: Organization = Depends(get_current_org),
+    user: User = Depends(get_current_user_in_org),
 ):
-    category = get_category(db, category_id)
+    category = get_category(db, org.id, category_id)
     if not category:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
     return category
@@ -57,9 +61,11 @@ def create_category_endpoint(
     data: CategoryCreate,
     db: Session = Depends(get_db),
     admin: User = Depends(get_current_admin),
+    org: Organization = Depends(get_current_org),
+    _: User = Depends(get_current_user_in_org),
 ):
     try:
-        category = create_category(db, data)
+        category = create_category(db, org.id, data)
     except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -74,14 +80,11 @@ def update_category_endpoint(
     data: CategoryUpdate,
     db: Session = Depends(get_db),
     admin: User = Depends(get_current_admin),
+    org: Organization = Depends(get_current_org),
+    _: User = Depends(get_current_user_in_org),
 ):
-    if data.parent_id is not None and data.parent_id == category_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="parent_id cannot be the same as id",
-        )
     try:
-        category = update_category(db, category_id, data)
+        category = update_category(db, org.id, category_id, data)
     except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -97,8 +100,10 @@ def delete_category_endpoint(
     category_id: UUID,
     db: Session = Depends(get_db),
     admin: User = Depends(get_current_admin),
+    org: Organization = Depends(get_current_org),
+    _: User = Depends(get_current_user_in_org),
 ):
-    deleted = delete_category(db, category_id)
+    deleted = delete_category(db, org.id, category_id)
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
     return Response(status_code=status.HTTP_204_NO_CONTENT)

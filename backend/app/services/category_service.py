@@ -9,8 +9,8 @@ from app.models.category import Category
 from app.schemas.category import CategoryCreate, CategoryUpdate
 
 
-def create_category(db: Session, data: CategoryCreate) -> Category:
-    category = Category(**data.model_dump())
+def create_category(db: Session, org_id: UUID, data: CategoryCreate) -> Category:
+    category = Category(organization_id=org_id, **data.model_dump())
     db.add(category)
     try:
         db.commit()
@@ -21,14 +21,22 @@ def create_category(db: Session, data: CategoryCreate) -> Category:
     return category
 
 
-def get_category(db: Session, id: UUID) -> Category | None:
-    return db.get(Category, id)
+def get_category(db: Session, org_id: UUID, id: UUID) -> Category | None:
+    return (
+        db.query(Category)
+        .filter(Category.id == id, Category.organization_id == org_id)
+        .first()
+    )
 
 
 def list_categories(
-    db: Session, page: int, page_size: int, search: str | None = None
+    db: Session,
+    org_id: UUID,
+    page: int,
+    page_size: int,
+    search: str | None = None,
 ) -> tuple[Sequence[Category], int]:
-    query = db.query(Category)
+    query = db.query(Category).filter(Category.organization_id == org_id)
     if search:
         like = f"%{search}%"
         query = query.filter(
@@ -36,7 +44,7 @@ def list_categories(
         )
     total = query.count()
     items = (
-        query.order_by(Category.created_at_utc.desc())
+        query.order_by(Category.name.asc())
         .offset((page - 1) * page_size)
         .limit(page_size)
         .all()
@@ -44,8 +52,12 @@ def list_categories(
     return items, total
 
 
-def update_category(db: Session, id: UUID, data: CategoryUpdate) -> Category | None:
-    category = db.get(Category, id)
+def update_category(db: Session, org_id: UUID, id: UUID, data: CategoryUpdate) -> Category | None:
+    category = (
+        db.query(Category)
+        .filter(Category.id == id, Category.organization_id == org_id)
+        .first()
+    )
     if not category:
         return None
     for field, value in data.model_dump(exclude_unset=True).items():
@@ -59,8 +71,12 @@ def update_category(db: Session, id: UUID, data: CategoryUpdate) -> Category | N
     return category
 
 
-def delete_category(db: Session, id: UUID) -> bool:
-    category = db.get(Category, id)
+def delete_category(db: Session, org_id: UUID, id: UUID) -> bool:
+    category = (
+        db.query(Category)
+        .filter(Category.id == id, Category.organization_id == org_id)
+        .first()
+    )
     if not category:
         return False
     db.delete(category)

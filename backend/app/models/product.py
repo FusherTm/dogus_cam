@@ -1,13 +1,4 @@
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    Numeric,
-    Text,
-    ForeignKey,
-    func,
-    text,
-)
+from sqlalchemy import Column, ForeignKey, Numeric, Text, text
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.db.base import Base
@@ -17,14 +8,12 @@ class Product(Base):
     __tablename__ = "products"
 
     id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    organization_id = Column(
+        UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="RESTRICT"), nullable=False
+    )
     name = Column(Text, nullable=False)
     sku = Column(Text, nullable=False, unique=True)
-    price = Column(Numeric(12, 2), nullable=False, server_default=text("0"))
-    is_active = Column(Boolean, nullable=False, server_default=text("true"))
-    restock_level = Column(Numeric(14, 3), nullable=False, server_default=text("0"))
-    org_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey("organizations.id", ondelete="RESTRICT"),
-        nullable=True,
+    category_id = Column(
+        UUID(as_uuid=True), ForeignKey("categories.id", ondelete="RESTRICT"), nullable=False
     )
-    created_at_utc = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    base_price_sqm = Column(Numeric(12, 2), nullable=False, server_default=text("0"))
