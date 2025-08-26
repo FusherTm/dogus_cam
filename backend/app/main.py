@@ -8,6 +8,7 @@ from app.api.categories import router as categories_router
 from app.api.partners import router as partners_router
 from app.api.orders import router as orders_router
 from app.api.dashboard import router as dashboard_router
+from app.api.finance import router as finance_router
 from app.core.security import hash_password
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -71,3 +72,4 @@ app.include_router(categories_router)
 app.include_router(partners_router)
 app.include_router(orders_router)
 app.include_router(dashboard_router)
+app.include_router(finance_router)

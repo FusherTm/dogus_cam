@@ -11,4 +11,5 @@ from app.models import (
     user,
     organization,
     user_org,
+    finance,
 )  # noqa: E402,F401
