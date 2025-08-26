@@ -11,8 +11,8 @@ from app.core.deps import (
     get_db,
     get_pagination,
 )
-from app.models.user import User
 from app.models.organization import Organization
+from app.models.user import User
 from app.schemas.product import (
     ProductCreate,
     ProductListResponse,
@@ -64,7 +64,7 @@ def create_product_endpoint(
     org: Organization = Depends(get_current_org),
     _: User = Depends(get_current_user_in_org),
 ):
-    if data.price < 0:
+    if data.base_price_sqm < 0:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Price must be non-negative")
     try:
         product = create_product(db, org.id, data)
@@ -82,7 +82,7 @@ def update_product_endpoint(
     org: Organization = Depends(get_current_org),
     _: User = Depends(get_current_user_in_org),
 ):
-    if data.price is not None and data.price < 0:
+    if data.base_price_sqm is not None and data.base_price_sqm < 0:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Price must be non-negative")
     try:
         product = update_product(db, org.id, product_id, data)

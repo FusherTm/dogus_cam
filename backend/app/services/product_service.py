@@ -10,7 +10,7 @@ from app.schemas.product import ProductCreate, ProductUpdate
 
 
 def create_product(db: Session, org_id: UUID, data: ProductCreate) -> Product:
-    product = Product(id=uuid4(), org_id=org_id, **data.model_dump())
+    product = Product(id=uuid4(), organization_id=org_id, **data.model_dump())
     db.add(product)
     try:
         db.commit()
@@ -24,7 +24,7 @@ def create_product(db: Session, org_id: UUID, data: ProductCreate) -> Product:
 def get_product(db: Session, org_id: UUID, id: UUID) -> Product | None:
     return (
         db.query(Product)
-        .filter(Product.id == id, Product.org_id == org_id)
+        .filter(Product.id == id, Product.organization_id == org_id)
         .first()
     )
 
@@ -36,7 +36,7 @@ def list_products(
     page_size: int,
     search: str | None = None,
 ) -> tuple[Sequence[Product], int]:
-    query = db.query(Product).filter(Product.org_id == org_id)
+    query = db.query(Product).filter(Product.organization_id == org_id)
     if search:
         like = f"%{search}%"
         query = query.filter(
@@ -44,7 +44,7 @@ def list_products(
         )
     total = query.count()
     items = (
-        query.order_by(Product.created_at_utc.desc())
+        query.order_by(Product.name.asc())
         .offset((page - 1) * page_size)
         .limit(page_size)
         .all()
@@ -52,12 +52,10 @@ def list_products(
     return items, total
 
 
-def update_product(
-    db: Session, org_id: UUID, id: UUID, data: ProductUpdate
-) -> Product | None:
+def update_product(db: Session, org_id: UUID, id: UUID, data: ProductUpdate) -> Product | None:
     product = (
         db.query(Product)
-        .filter(Product.id == id, Product.org_id == org_id)
+        .filter(Product.id == id, Product.organization_id == org_id)
         .first()
     )
     if not product:
@@ -76,7 +74,7 @@ def update_product(
 def delete_product(db: Session, org_id: UUID, id: UUID) -> bool:
     product = (
         db.query(Product)
-        .filter(Product.id == id, Product.org_id == org_id)
+        .filter(Product.id == id, Product.organization_id == org_id)
         .first()
     )
     if not product:

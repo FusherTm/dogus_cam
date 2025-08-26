@@ -1,14 +1,5 @@
-from sqlalchemy import (
-    Boolean,
-    CheckConstraint,
-    Column,
-    DateTime,
-    Index,
-    Text,
-    func,
-    text,
-)
-from sqlalchemy.dialects.postgresql import CITEXT, UUID
+from sqlalchemy import Column, Text, CheckConstraint, ForeignKey, Index, text
+from sqlalchemy.dialects.postgresql import UUID, CITEXT
 
 from app.db.base import Base
 
@@ -19,18 +10,19 @@ class Partner(Base):
         Index("ix_partners_name", text("lower(name)")),
         Index("ix_partners_type", "type"),
         CheckConstraint(
-            "type IN ('customer','supplier','both')",
+            "type IN ('CUSTOMER','SUPPLIER','BOTH')",
             name="chk_partner_type",
         ),
     )
 
     id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
-    name = Column(Text, nullable=False)
+    organization_id = Column(
+        UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="RESTRICT"), nullable=False
+    )
     type = Column(Text, nullable=False)
-    email = Column(CITEXT(), nullable=True)
+    name = Column(Text, nullable=False)
+    contact_person = Column(Text, nullable=True)
     phone = Column(Text, nullable=True)
-    tax_number = Column(Text, nullable=True, unique=True)
-    billing_address = Column(Text, nullable=True)
-    shipping_address = Column(Text, nullable=True)
-    is_active = Column(Boolean, nullable=False, server_default=text("true"))
-    created_at_utc = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    email = Column(CITEXT(), nullable=True)
+    address = Column(Text, nullable=True)
+    tax_number = Column(Text, nullable=True)
