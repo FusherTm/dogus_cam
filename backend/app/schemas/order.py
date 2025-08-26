@@ -12,6 +12,8 @@ class OrderItemBase(BaseModel):
     description: str | None = None
     quantity: Decimal = Field(..., gt=0)
     unit_price: Decimal = Field(..., ge=0)
+    width: Decimal = Field(..., gt=0)
+    height: Decimal = Field(..., gt=0)
     line_discount_rate: Decimal = Field(0, ge=0, le=100)
     tax_rate: Decimal = Field(20, ge=0, le=100)
 
@@ -43,12 +45,18 @@ class OrderUpdate(BaseModel):
     items: list[OrderItemCreate] | None = None
 
 
+class OrderStatusUpdate(BaseModel):
+    status: str
+
+
 class OrderItemPublic(BaseModel):
     id: UUID
     product_id: UUID
     description: str | None
     quantity: Decimal
     unit_price: Decimal
+    width: Decimal
+    height: Decimal
     line_discount_rate: Decimal
     tax_rate: Decimal
     line_subtotal: Decimal

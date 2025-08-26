@@ -18,6 +18,7 @@ from app.schemas.order import (
     OrderListResponse,
     OrderPublic,
     OrderUpdate,
+    OrderStatusUpdate,
 )
 from app.services.order_service import (
     create_order,
@@ -25,6 +26,7 @@ from app.services.order_service import (
     get_order,
     list_orders,
     update_order,
+    update_order_status,
 )
 
 router = APIRouter(prefix="/orders", tags=["orders"])
@@ -84,6 +86,24 @@ def update_order_endpoint(
     except IntegrityError:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Order update conflict")
     if not order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+    return order
+
+
+@router.post("/{order_id}/status", response_model=OrderPublic)
+def update_order_status_endpoint(
+    order_id: UUID,
+    data: OrderStatusUpdate,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+    org: Organization = Depends(get_current_org),
+    _: User = Depends(get_current_user_in_org),
+):
+    try:
+        order = update_order_status(db, order_id, data.status, admin)
+    except IntegrityError:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Order status conflict")
+    if not order or order.organization_id != org.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
     return order
 

@@ -82,6 +82,8 @@ class OrderItem(Base):
     description = Column(Text, nullable=True)
     quantity = Column(Numeric(14, 3), nullable=False)
     unit_price = Column(Numeric(14, 2), nullable=False)
+    width = Column(Numeric(14, 2), nullable=False)
+    height = Column(Numeric(14, 2), nullable=False)
     line_discount_rate = Column(Numeric(5, 2), nullable=False, server_default=text("0"))
     tax_rate = Column(Numeric(5, 2), nullable=False, server_default=text("20"))
     line_subtotal = Column(Numeric(14, 2), nullable=False, server_default=text("0"))
@@ -89,3 +91,8 @@ class OrderItem(Base):
     line_total = Column(Numeric(14, 2), nullable=False, server_default=text("0"))
 
     order = relationship("Order", back_populates="items")
+    jobs = relationship(
+        "ProductionJob",
+        back_populates="order_item",
+        cascade="all, delete-orphan",
+    )
