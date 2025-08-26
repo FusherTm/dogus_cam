@@ -1,3 +1,5 @@
+from datetime import datetime
+from decimal import Decimal
 from typing import Sequence
 from uuid import UUID, uuid4
 
@@ -5,39 +7,61 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models.order import Order, OrderItem
+from app.models.production_job import ProductionJob
+from app.models.user import User
 from app.schemas.order import OrderCreate, OrderUpdate
 
 
-def _calculate_totals(order: Order) -> None:
-    subtotal = 0
-    tax_total = 0
-    for item in order.items:
-        line_subtotal = item.quantity * item.unit_price * (1 - item.line_discount_rate / 100)
-        line_tax = line_subtotal * (item.tax_rate / 100)
-        item.line_subtotal = line_subtotal
-        item.line_tax = line_tax
-        item.line_total = line_subtotal + line_tax
-        subtotal += line_subtotal
-        tax_total += line_tax
-    order.subtotal = subtotal
-    order.tax_total = tax_total
-    order.grand_total = subtotal + tax_total
-
-
 def create_order(db: Session, org_id: UUID, data: OrderCreate) -> Order:
+    year = datetime.utcnow().year
+    last_order = db.query(Order).order_by(Order.number.desc()).first()
+    if last_order and last_order.number.startswith(f"{year}-"):
+        seq = int(last_order.number.split("-")[1]) + 1
+    else:
+        seq = 1
+    order_number = f"{year}-{seq:03d}"
+
+    items = []
+    grand_total = Decimal("0")
+    for item in data.items:
+        total_price = (
+            (item.width / Decimal("1000"))
+            * (item.height / Decimal("1000"))
+            * item.quantity
+            * item.unit_price
+        )
+        order_item = OrderItem(
+            id=uuid4(),
+            product_id=item.product_id,
+            description=item.description,
+            quantity=item.quantity,
+            unit_price=item.unit_price,
+            width=item.width,
+            height=item.height,
+            line_discount_rate=item.line_discount_rate,
+            tax_rate=item.tax_rate,
+            line_subtotal=total_price,
+            line_tax=Decimal("0"),
+            line_total=total_price,
+        )
+        items.append(order_item)
+        grand_total += total_price
+
     order = Order(
         id=uuid4(),
         organization_id=org_id,
-        number=f"ORD-{uuid4().hex[:8].upper()}",
+        number=order_number,
         partner_id=data.partner_id,
         project_name=data.project_name,
         delivery_date=data.delivery_date,
-        status=data.status or "TEKLIF",
+        status="TEKLIF",
         discount_rate=data.discount_rate,
         notes=data.notes,
-        items=[OrderItem(**item.model_dump()) for item in data.items],
+        subtotal=grand_total,
+        tax_total=Decimal("0"),
+        grand_total=grand_total,
+        items=items,
     )
-    _calculate_totals(order)
     db.add(order)
     try:
         db.commit()
@@ -57,10 +81,7 @@ def get_order(db: Session, org_id: UUID, id: UUID) -> Order | None:
 
 
 def list_orders(
-    db: Session,
-    org_id: UUID,
-    page: int,
-    page_size: int,
+    db: Session, org_id: UUID, page: int, page_size: int
 ) -> tuple[Sequence[Order], int]:
     query = db.query(Order).filter(Order.organization_id == org_id)
     total = query.count()
@@ -84,8 +105,36 @@ def update_order(db: Session, org_id: UUID, id: UUID, data: OrderUpdate) -> Orde
     for field, value in data.model_dump(exclude_unset=True, exclude={"items"}).items():
         setattr(order, field, value)
     if data.items is not None:
-        order.items = [OrderItem(**item.model_dump()) for item in data.items]
-    _calculate_totals(order)
+        order.items = [
+            OrderItem(
+                id=uuid4(),
+                product_id=item.product_id,
+                description=item.description,
+                quantity=item.quantity,
+                unit_price=item.unit_price,
+                width=item.width,
+                height=item.height,
+                line_discount_rate=item.line_discount_rate,
+                tax_rate=item.tax_rate,
+            )
+            for item in data.items
+        ]
+    grand_total = Decimal("0")
+    for item in order.items:
+        total_price = (
+            (item.width / Decimal("1000"))
+            * (item.height / Decimal("1000"))
+            * item.quantity
+            * item.unit_price
+        )
+        item.line_subtotal = total_price
+        item.line_tax = Decimal("0")
+        item.line_total = total_price
+        grand_total += total_price
+    order.subtotal = grand_total
+    order.tax_total = Decimal("0")
+    order.grand_total = grand_total
+
     try:
         db.commit()
     except IntegrityError:
@@ -106,3 +155,25 @@ def delete_order(db: Session, org_id: UUID, id: UUID) -> bool:
     db.delete(order)
     db.commit()
     return True
+
+
+def update_order_status(db: Session, id: UUID, new_status: str, current_user: User) -> Order | None:
+    order = db.query(Order).filter(Order.id == id).first()
+    if not order:
+        return None
+    order.status = new_status
+    if new_status == "URETIMDE":
+        for item in order.items:
+            job = ProductionJob(
+                id=uuid4(),
+                order_item_id=item.id,
+                quantity_required=item.quantity,
+            )
+            db.add(job)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise
+    db.refresh(order)
+    return order
